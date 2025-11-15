@@ -37,8 +37,8 @@ export default function OTPLogin({ onLogin, userType = 'customer' }) {
     setError('')
 
     try {
-      const fullPhone = getFullPhoneNumber(phone)
-      const result = await sendOTP(fullPhone)
+      const cleanPhone = formatPhoneNumber(phone)
+      const result = await sendOTP(cleanPhone)
       if (result.success) {
         setStep('otp')
       } else {
@@ -61,42 +61,52 @@ export default function OTPLogin({ onLogin, userType = 'customer' }) {
     setError('')
 
     try {
-      const fullPhone = getFullPhoneNumber(phone)
-      const verifyResult = await verifyOTP(fullPhone, otp)
+      const cleanPhone = formatPhoneNumber(phone)
+      
+      // Firebase OTP verification required
+      if (!db) {
+        setError('Firebase connection required. Please check configuration.')
+        setLoading(false)
+        return
+      }
+      
+      const verifyResult = await verifyOTP(cleanPhone, otp)
       if (!verifyResult.success) {
         setError(verifyResult.error)
         setLoading(false)
         return
       }
 
-      // Find user by phone (store with +91 prefix)
-      const cleanPhone = getFullPhoneNumber(phone)
+      // Find user by phone - use format without +91 (as stored in database)
+      const searchPhone = formatPhoneNumber(phone) // 9876543219
       
       if (userType === 'vendor') {
-        // For vendors, only check vendors collection
-        console.log('🔍 Searching for vendor with phone:', cleanPhone)
+        // For vendors, search with clean phone number
+        console.log('🔍 Searching for vendor with phone:', searchPhone)
         const vendorQuery = query(
           collection(db, 'vendors'),
-          where('phone', '==', cleanPhone)
+          where('phone', '==', searchPhone)
         )
         const vendorSnap = await getDocs(vendorQuery)
+        
         console.log('📊 Vendor query results:', vendorSnap.size, 'documents found')
         
         if (!vendorSnap.empty) {
           const vendorData = vendorSnap.docs[0].data()
-          console.log('✅ Vendor found:', vendorData.name)
+          console.log('✅ Vendor found:', vendorData.name || vendorData.businessProfile?.businessName)
           const user = { id: vendorSnap.docs[0].id, ...vendorData }
           localStorage.setItem('currentUser', JSON.stringify(user))
           onLogin(user)
         } else {
-          console.log('❌ No vendor found with phone:', cleanPhone)
+          console.log('❌ No vendor found with phone:', searchPhone)
           setError('No vendor account found with this phone number')
         }
       } else {
-        // For customers and admins, check users collection
+        // For customers and admins, search with clean phone number
+        console.log('🔍 Searching for user with phone:', searchPhone)
         const userQuery = query(
           collection(db, 'users'),
-          where('phone', '==', cleanPhone)
+          where('phone', '==', searchPhone)
         )
         const userSnap = await getDocs(userQuery)
         
@@ -159,17 +169,23 @@ export default function OTPLogin({ onLogin, userType = 'customer' }) {
     setError('')
 
     try {
+      // Firebase connection required
+      if (!db) {
+        setError('Firebase connection required. Please check configuration.')
+        setLoading(false)
+        return
+      }
+      
       if (emailOtp === '123456') {
-        const { collection, addDoc } = await import('firebase/firestore')
-        const { db } = await import('../lib/firebase')
+        const { collection, addDoc, serverTimestamp } = await import('firebase/firestore')
         
         const newUser = {
-          phone: getFullPhoneNumber(phone),
+          phone: formatPhoneNumber(phone), // Store without +91 prefix
           role: 'customer', // Mandatory role field
           name: name.trim(),
           email: email.trim(),
           emailVerified: true,
-          createdAt: new Date(),
+          createdAt: serverTimestamp(),
           status: 'active' // Additional status field
         }
         
@@ -182,7 +198,8 @@ export default function OTPLogin({ onLogin, userType = 'customer' }) {
         setError('Invalid verification code. Use 123456 for demo.')
       }
     } catch (error) {
-      setError('Verification failed. Please try again.')
+      console.error('Firebase error:', error)
+      setError('Firebase connection failed. Please check configuration.')
     }
     
     setLoading(false)

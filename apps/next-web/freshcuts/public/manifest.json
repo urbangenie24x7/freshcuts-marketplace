@@ -1,16 +1,27 @@
 {
-  "name": "FreshCuts",
+  "name": "FreshCuts - Fresh Meat Delivery",
   "short_name": "FreshCuts",
-  "description": "Local meat vendor marketplace",
+  "description": "Order fresh meat from local vendors with same-day delivery",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#16a34a",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
     }
-  ]
+  ],
+  "categories": ["food", "shopping"],
+  "lang": "en-IN",
+  "dir": "ltr"
 }

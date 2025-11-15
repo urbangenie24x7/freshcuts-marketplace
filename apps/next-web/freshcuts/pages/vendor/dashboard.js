@@ -552,7 +552,12 @@ export default function VendorDashboard() {
                       </button>
                     </div>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                      gap: '16px',
+                      alignItems: 'start'
+                    }}>
                       {categoryProducts.map(product => {
                         const vendorProduct = vendorProducts.find(vp => vp.productId === product.id)
                         const isActive = vendorProduct && vendorProduct.available
@@ -562,7 +567,11 @@ export default function VendorDashboard() {
                           <div key={product.id} style={{
                             border: '1px solid #e2e8f0',
                             borderRadius: '8px',
-                            padding: '16px'
+                            padding: '16px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            height: '280px',
+                            minHeight: '280px'
                           }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                               <img 
@@ -586,8 +595,14 @@ export default function VendorDashboard() {
                               </div>
                             </div>
                             
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ 
+                              display: 'flex', 
+                              flexDirection: 'column', 
+                              gap: '12px',
+                              flex: 1,
+                              justifyContent: 'space-between'
+                            }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <div style={{ flex: 1 }}>
                                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: '#374151', marginBottom: '4px' }}>Your Price</label>
                                   <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #d1d5db', borderRadius: '6px', backgroundColor: isActive ? 'white' : '#f9fafb' }}>
@@ -636,7 +651,10 @@ export default function VendorDashboard() {
                                     cursor: 'pointer',
                                     backgroundColor: isActive ? '#dc2626' : '#16a34a',
                                     color: 'white',
-                                    alignSelf: 'flex-end'
+
+                                    whiteSpace: 'nowrap',
+                                    zIndex: 1,
+                                    position: 'relative'
                                   }}
                                 >
                                   {isActive ? 'Deactivate' : 'Activate'}

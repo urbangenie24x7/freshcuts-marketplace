@@ -10,11 +10,17 @@ export default function VendorPayments() {
   const [pendingAmount, setPendingAmount] = useState(0)
 
   useEffect(() => {
-    const savedVendor = localStorage.getItem('currentVendor')
-    if (savedVendor) {
-      const vendor = JSON.parse(savedVendor)
-      setCurrentVendor(vendor)
-      loadPayments(vendor.id)
+    const savedUser = localStorage.getItem('currentUser')
+    if (savedUser) {
+      const user = JSON.parse(savedUser)
+      if (user.role === 'vendor') {
+        setCurrentVendor(user)
+        loadPayments(user.id)
+      } else {
+        window.location.href = '/vendor/login'
+      }
+    } else {
+      window.location.href = '/vendor/login'
     }
   }, [])
 
@@ -78,7 +84,7 @@ export default function VendorPayments() {
             <div className="flex justify-between items-center py-4">
               <h1 className="text-2xl font-bold text-gray-900">Payment History</h1>
               <div className="text-sm text-gray-500">
-                {currentVendor?.businessName}
+                {currentVendor?.businessProfile?.businessName || currentVendor?.name}
               </div>
             </div>
           </div>

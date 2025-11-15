@@ -11,9 +11,15 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
+    // Sanitize error data before logging
+    const sanitizedError = {
+      message: error?.message || 'Unknown error',
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+    }
+    
     // Async logging to avoid blocking render
     setTimeout(() => {
-      console.error('Error caught:', error, errorInfo)
+      console.error('Error caught:', sanitizedError)
     }, 0)
   }
 

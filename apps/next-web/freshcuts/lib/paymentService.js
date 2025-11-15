@@ -1,8 +1,20 @@
 // Payment Gateway Integration Service
 class PaymentService {
   constructor() {
-    this.razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_OEt8U0bOaGgn9k'
-    this.phonepeKey = process.env.NEXT_PUBLIC_PHONEPE_KEY || 'phonepe_test_key'
+    this.razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+    this.phonepeKey = process.env.NEXT_PUBLIC_PHONEPE_KEY
+  }
+
+  // Get CSRF token
+  async getCSRFToken() {
+    try {
+      const response = await fetch('/api/csrf-token')
+      const { token } = await response.json()
+      return token
+    } catch (error) {
+      console.error('Error getting CSRF token:', error)
+      return null
+    }
   }
 
   // Initialize Razorpay
@@ -19,9 +31,13 @@ class PaymentService {
   // Create Razorpay order
   async createRazorpayOrder(orderData) {
     try {
+      const csrfToken = await this.getCSRFToken()
       const response = await fetch('/api/payment/create-razorpay-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
         body: JSON.stringify({
           amount: orderData.amount * 100, // Convert to paise
           currency: 'INR',
@@ -94,9 +110,13 @@ class PaymentService {
   // Verify Razorpay payment
   async verifyRazorpayPayment(paymentData) {
     try {
+      const csrfToken = await this.getCSRFToken()
       const response = await fetch('/api/payment/verify-razorpay', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
         body: JSON.stringify(paymentData)
       })
       return await response.json()

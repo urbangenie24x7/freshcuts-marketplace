@@ -1,4 +1,4 @@
-// Authentication utilities
+// Authentication utilities - Firebase only
 export const getCurrentUser = () => {
   if (typeof window === 'undefined') return null
   
@@ -6,8 +6,15 @@ export const getCurrentUser = () => {
   if (!userStr) return null
   
   try {
-    return JSON.parse(userStr)
+    const user = JSON.parse(userStr)
+    // Ensure user has required Firebase fields
+    if (!user.id || !user.phone || !user.role) {
+      localStorage.removeItem('currentUser')
+      return null
+    }
+    return user
   } catch {
+    localStorage.removeItem('currentUser')
     return null
   }
 }

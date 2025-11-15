@@ -13,11 +13,17 @@ export default function VendorReports() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const savedVendor = localStorage.getItem('currentVendor')
-    if (savedVendor) {
-      const vendor = JSON.parse(savedVendor)
-      setCurrentVendor(vendor)
-      loadVendorReport(vendor.id)
+    const savedUser = localStorage.getItem('currentUser')
+    if (savedUser) {
+      const user = JSON.parse(savedUser)
+      if (user.role === 'vendor') {
+        setCurrentVendor(user)
+        loadVendorReport(user.id)
+      } else {
+        window.location.href = '/vendor/login'
+      }
+    } else {
+      window.location.href = '/vendor/login'
     }
   }, [dateRange])
 

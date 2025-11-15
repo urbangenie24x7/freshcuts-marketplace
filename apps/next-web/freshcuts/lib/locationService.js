@@ -43,9 +43,21 @@ export const geocodeAddress = async (address) => {
     throw new Error('Google Maps API key not configured')
   }
 
-  const response = await fetch(
-    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`
-  )
+  // Validate and sanitize address input
+  if (!address || typeof address !== 'string' || address.length > 200) {
+    throw new Error('Invalid address format')
+  }
+
+  const sanitizedAddress = address.replace(/[<>"'&]/g, '')
+  const url = new URL('https://maps.googleapis.com/maps/api/geocode/json')
+  url.searchParams.set('address', sanitizedAddress)
+  url.searchParams.set('key', apiKey)
+  
+  const response = await fetch(url.toString())
+  
+  if (!response.ok) {
+    throw new Error('Geocoding service unavailable')
+  }
   
   const data = await response.json()
   
@@ -67,9 +79,25 @@ export const reverseGeocode = async (lat, lng) => {
     throw new Error('Google Maps API key not configured')
   }
 
-  const response = await fetch(
-    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`
-  )
+  // Validate coordinates
+  const latitude = parseFloat(lat)
+  const longitude = parseFloat(lng)
+  
+  if (isNaN(latitude) || isNaN(longitude) || 
+      latitude < -90 || latitude > 90 || 
+      longitude < -180 || longitude > 180) {
+    throw new Error('Invalid coordinates')
+  }
+
+  const url = new URL('https://maps.googleapis.com/maps/api/geocode/json')
+  url.searchParams.set('latlng', `${latitude},${longitude}`)
+  url.searchParams.set('key', apiKey)
+  
+  const response = await fetch(url.toString())
+  
+  if (!response.ok) {
+    throw new Error('Reverse geocoding service unavailable')
+  }
   
   const data = await response.json()
   

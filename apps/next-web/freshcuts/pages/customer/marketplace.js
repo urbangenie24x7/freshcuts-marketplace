@@ -346,7 +346,7 @@ export default function CustomerMarketplace() {
         <SEOHead 
           title={`${selectedVendor.name} - Fresh Meat Vendor | FreshCuts`}
           description={`Buy fresh ${selectedVendor.categories?.join(', ')} from ${selectedVendor.name}. Premium quality meat with fast delivery. ${vendorProducts.length} products available.`}
-          url={`https://freshcuts.com/vendor/${selectedVendor.id}`}
+          url={`https://freshcuts.urbangenie24x7.com/vendor/${selectedVendor.id}`}
           structuredData={{
             "@context": "https://schema.org",
             "@type": "LocalBusiness",
@@ -377,22 +377,22 @@ export default function CustomerMarketplace() {
         <SEOHead 
           title={`${selectedCategory === 'all' ? 'All Categories' : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Vendors | FreshCuts`}
           description={`Find local ${selectedCategory === 'all' ? 'meat' : selectedCategory} vendors near you. Fresh quality guaranteed with fast delivery. ${filteredVendors.length} vendors available.`}
-          url={`https://freshcuts.com/category/${selectedCategory}`}
+          url={`https://freshcuts.urbangenie24x7.com/category/${selectedCategory}`}
         />
       ) : (
         <SEOHead 
           title="FreshCuts - Fresh Meat Marketplace | Local Vendors"
           description="Buy fresh meat from local vendors. Premium quality chicken, mutton, fish, prawns and more with free delivery. Support local businesses."
-          url="https://freshcuts.com"
+          url="https://freshcuts.urbangenie24x7.com"
           structuredData={{
             "@context": "https://schema.org",
             "@type": "WebSite",
             "name": "FreshCuts",
             "description": "Fresh meat marketplace connecting customers with local vendors",
-            "url": "https://freshcuts.com",
+            "url": "https://freshcuts.urbangenie24x7.com",
             "potentialAction": {
               "@type": "SearchAction",
-              "target": "https://freshcuts.com/search?q={search_term_string}",
+              "target": "https://freshcuts.urbangenie24x7.com/search?q={search_term_string}",
               "query-input": "required name=search_term_string"
             }
           }}

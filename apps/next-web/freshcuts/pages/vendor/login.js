@@ -1,23 +1,95 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import OTPLogin from '../../components/OTPLogin'
+import { checkFirebaseConnection } from '../../lib/firebaseCheck'
 
 export default function VendorLogin() {
   const router = useRouter()
+  const [firebaseStatus, setFirebaseStatus] = useState({ checking: true, connected: false, error: null })
 
   useEffect(() => {
+    // Check Firebase connection first
+    checkFirebaseConnection().then(({ connected, error }) => {
+      setFirebaseStatus({ checking: false, connected, error })
+    })
+    
     // Check if vendor is already logged in
     const currentUser = localStorage.getItem('currentUser')
     if (currentUser) {
-      const user = JSON.parse(currentUser)
-      if (user.role === 'vendor') {
-        router.push('/vendor/dashboard')
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.role === 'vendor' && user.id && user.phone) {
+          router.push('/vendor/dashboard')
+        }
+      } catch {
+        localStorage.removeItem('currentUser')
       }
     }
   }, [])
 
   const handleLogin = (user) => {
     router.push('/vendor/dashboard')
+  }
+
+  // Show Firebase connection status
+  if (firebaseStatus.checking) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#ffffff',
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        padding: '20px'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '24px', marginBottom: '16px' }}>🔄</div>
+          <p style={{ color: '#6b7280' }}>Connecting to Firebase...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!firebaseStatus.connected) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: '#ffffff',
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        padding: '20px'
+      }}>
+        <div style={{ 
+          backgroundColor: '#fef2f2', 
+          border: '1px solid #fecaca',
+          padding: '32px 40px', 
+          borderRadius: '24px', 
+          width: '100%', 
+          maxWidth: '420px',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔥</div>
+          <h2 style={{ color: '#dc2626', marginBottom: '16px' }}>Firebase Connection Required</h2>
+          <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+            {firebaseStatus.error || 'Unable to connect to Firebase. Please check configuration.'}
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              backgroundColor: '#dc2626',
+              color: 'white',
+              padding: '12px 24px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
