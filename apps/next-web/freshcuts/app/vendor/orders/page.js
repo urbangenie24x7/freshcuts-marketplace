@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import Navigation from '../../../components/Navigation'
 import { orderService } from '../../../lib/orderService'
 
@@ -21,11 +22,14 @@ export default function VendorOrdersPage() {
 
   const loadVendorOrders = async (vendorId) => {
     try {
+      console.log('Loading orders for vendor:', vendorId)
       const vendorOrders = await orderService.getVendorOrders(vendorId)
+      console.log('Loaded orders:', vendorOrders)
       setOrders(vendorOrders)
       setLoading(false)
     } catch (error) {
       console.error('Error loading vendor orders:', error)
+      setOrders([])
       setLoading(false)
     }
   }
@@ -73,12 +77,42 @@ export default function VendorOrdersPage() {
 
   if (loading) return <div style={{ padding: '20px' }}>Loading...</div>
 
+  const handleVendorLogin = () => {
+    const testVendor = {
+      id: 'R2JrahdSzQ9vMqiDYQ1X',
+      role: 'vendor',
+      businessName: 'Village Chicken Manikonda',
+      email: 'vendor@villagechicken.com'
+    }
+    localStorage.setItem('currentUser', JSON.stringify(testVendor))
+    setCurrentVendor(testVendor)
+    loadVendorOrders(testVendor.id)
+  }
+
   if (!currentVendor) {
     return (
       <>
         <Navigation />
-        <div style={{ padding: '20px', textAlign: 'center' }}>
-          <h2>Please login as vendor to view orders</h2>
+        <div style={{ padding: '20px', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+            <h2 style={{ color: '#16a34a', marginBottom: '20px' }}>Vendor Login Required</h2>
+            <p style={{ color: '#6b7280', marginBottom: '30px' }}>Please login as a vendor to view and manage orders</p>
+            <button
+              onClick={handleVendorLogin}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#16a34a',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              Login as Village Chicken Manikonda (Demo)
+            </button>
+          </div>
         </div>
       </>
     )
@@ -87,10 +121,40 @@ export default function VendorOrdersPage() {
   return (
     <>
       <Navigation />
-      <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ color: '#16a34a', fontSize: '32px', marginBottom: '30px' }}>
-          My Orders - {currentVendor.businessName || currentVendor.name}
-        </h1>
+      <div className="vendor-orders-container">
+      <style jsx>{`
+        .vendor-orders-container {
+          padding: 20px;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        .order-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr auto;
+          gap: 20px;
+          align-items: start;
+        }
+        @media (max-width: 768px) {
+          .vendor-orders-container {
+            padding: 15px;
+          }
+          .order-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+          }
+          .order-actions {
+            justify-self: start;
+          }
+        }
+      `}</style>
+        <div style={{ marginBottom: '30px' }}>
+          <Link href="/vendor" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px', marginBottom: '10px', display: 'inline-block' }}>
+            ← Back to Dashboard
+          </Link>
+          <h1 style={{ color: '#16a34a', fontSize: '32px', margin: '0' }}>
+            My Orders - {currentVendor.businessName || currentVendor.name}
+          </h1>
+        </div>
         
         {orders.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px', backgroundColor: 'white', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
@@ -106,7 +170,7 @@ export default function VendorOrdersPage() {
                 border: '1px solid #e5e7eb',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
               }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '20px', alignItems: 'start' }}>
+                <div className="order-grid">
                   {/* Order Info */}
                   <div>
                     <h3 style={{ margin: '0 0 10px 0', fontSize: '18px' }}>Order #{order.id.slice(-8)}</h3>
@@ -153,7 +217,7 @@ export default function VendorOrdersPage() {
                   </div>
 
                   {/* Actions */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div className="order-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <span style={{
                       padding: '6px 12px',
                       backgroundColor: getStatusColor(order.status),

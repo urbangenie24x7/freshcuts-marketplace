@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navigation from '../../../../components/Navigation'
 import { useCart } from '../../../../lib/CartContext'
+import { VendorService, CompositeIdService } from '../../../../lib/masterService'
 
 export default function VendorProductsPage() {
   const params = useParams()
@@ -21,42 +22,31 @@ export default function VendorProductsPage() {
 
   const loadVendorProducts = async () => {
     try {
-      const { collection, getDocs, query, where, doc, getDoc } = await import('firebase/firestore')
-      const { db } = await import('../../../../lib/firebase.client')
-      
       console.log('Loading products for vendor:', params.id, 'category:', category)
       
-      const vendorDoc = await getDoc(doc(db, 'vendors', params.id))
-      if (vendorDoc.exists()) {
-        setVendor({ id: vendorDoc.id, ...vendorDoc.data() })
+      // Get vendor info
+      const vendorData = await VendorService.getById(params.id)
+      if (vendorData) {
+        setVendor(vendorData)
       }
       
-      // First get all products for this vendor
-      const allProductsQuery = query(
-        collection(db, 'products'),
-        where('vendorId', '==', params.id),
-        where('available', '==', true)
-      )
-      
-      const productsSnap = await getDocs(allProductsQuery)
-      let allProducts = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-      
-      console.log('All vendor products:', allProducts)
+      // Get vendor products using the new system
+      const vendorProducts = await CompositeIdService.getProductsByVendor(params.id)
+      console.log('Vendor products from vendorProducts collection:', vendorProducts)
       
       // Filter by category if specified
+      let filteredProducts = vendorProducts
       if (category) {
-        const filteredProducts = allProducts.filter(product => {
+        filteredProducts = vendorProducts.filter(product => {
           const productCategory = product.category || ''
           return productCategory.toLowerCase().includes(category.toLowerCase()) ||
                  category.toLowerCase().includes(productCategory.toLowerCase()) ||
                  productCategory === category
         })
         console.log('Filtered products for category:', category, filteredProducts)
-        setProducts(filteredProducts)
-      } else {
-        setProducts(allProducts)
       }
       
+      setProducts(filteredProducts)
       setLoading(false)
     } catch (error) {
       console.error('Error loading vendor products:', error)
@@ -66,14 +56,14 @@ export default function VendorProductsPage() {
 
   const handleAddToCart = (product) => {
     const cartItem = {
-      id: product.id,
-      productId: product.id,
-      name: product.name,
-      price: product.default_price || product.price,
-      image: product.image_url,
+      id: product.compositeId || product.id,
+      productId: product.productId || product.id,
+      name: product.productName || product.name,
+      price: product.finalPrice || product.vendorPrice || product.price,
+      image: product.imageUrl || product.image_url,
       quantity: 1,
       vendorId: product.vendorId,
-      vendorName: product.vendorName || vendor?.businessName || vendor?.name
+      vendorName: vendor?.businessName || vendor?.name
     }
     addToCart(cartItem)
   }
@@ -126,8 +116,8 @@ export default function VendorProductsPage() {
               overflow: 'hidden',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
-              {product.image_url ? (
-                <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+              {(product.imageUrl || product.image_url) ? (
+                <img src={product.imageUrl || product.image_url} alt={product.productName || product.name} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
               ) : (
                 <div style={{ width: '100%', height: '200px', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>
                   🥩
@@ -136,10 +126,10 @@ export default function VendorProductsPage() {
               
               <div style={{ padding: '20px' }}>
                 <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '600' }}>
-                  {product.name}
+                  {product.productName || product.name}
                 </h3>
                 <p style={{ margin: '0 0 15px 0', fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>
-                  ₹{product.default_price || product.price}
+                  ₹{product.finalPrice || product.vendorPrice || product.price}
                 </p>
                 
                 <button

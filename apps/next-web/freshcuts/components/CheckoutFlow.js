@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import GooglePlacesAutocomplete from './GooglePlacesAutocomplete'
-import GoogleMapLocationPicker from './GoogleMapLocationPicker'
+import SimpleAddressInput from './SimpleAddressInput'
 import PaymentMethods from './PaymentMethods'
 import { sendVendorNotificationSMS } from '../lib/smsService'
 import paymentService from '../lib/paymentService'
@@ -385,10 +384,10 @@ export default function CheckoutFlow({ cartItems, onComplete, onCancel, currentU
                 
                 <div style={{ marginBottom: '15px' }}>
                   <label style={{ display: 'block', marginBottom: '5px' }}>Search Area/Locality:</label>
-                  <GooglePlacesAutocomplete
+                  <SimpleAddressInput
                     placeholder="Start typing area name..."
                     value={newAddress.locality}
-                    onPlaceSelect={(addressData) => {
+                    onAddressSelect={(addressData) => {
                       setNewAddress({
                         ...newAddress,
                         locality: addressData.locality || addressData.city,
@@ -468,7 +467,7 @@ export default function CheckoutFlow({ cartItems, onComplete, onCancel, currentU
 
                 <div style={{ marginBottom: '15px' }}>
                   <button
-                    onClick={() => setShowMapPicker(true)}
+                    onClick={getCurrentLocation}
                     style={{
                       padding: '8px 16px',
                       backgroundColor: '#10b981',
@@ -479,11 +478,11 @@ export default function CheckoutFlow({ cartItems, onComplete, onCancel, currentU
                       fontSize: '14px'
                     }}
                   >
-                    📍 Select Location on Map
+                    📍 Use Current Location
                   </button>
                   {newAddress.location?.lat && (
                     <p style={{ fontSize: '12px', color: '#16a34a', marginTop: '8px', margin: '8px 0 0 0' }}>
-                      ✓ Location selected: {newAddress.location.address?.substring(0, 40)}...
+                      ✓ Location detected
                     </p>
                   )}
                 </div>
@@ -782,23 +781,7 @@ export default function CheckoutFlow({ cartItems, onComplete, onCancel, currentU
           </div>
         )}
         
-        {/* Google Map Location Picker Modal */}
-        {showMapPicker && (
-          <GoogleMapLocationPicker
-            onLocationSelect={(locationData) => {
-              setNewAddress({
-                ...newAddress,
-                location: {
-                  lat: locationData.lat,
-                  lng: locationData.lng,
-                  address: locationData.address
-                }
-              })
-            }}
-            addressDetails={newAddress}
-            onClose={() => setShowMapPicker(false)}
-          />
-        )}
+
       </div>
     </div>
   )

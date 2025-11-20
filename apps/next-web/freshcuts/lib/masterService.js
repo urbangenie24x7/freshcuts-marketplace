@@ -413,12 +413,21 @@ export class CompositeIdService {
    */
   static async getProductsByVendor(vendorId) {
     try {
+      // First try to get vendor by Firebase ID to get numeric ID
+      const vendor = await VendorService.getById(vendorId)
+      const searchVendorId = vendor?.numericId || vendorId
+      
+      console.log('Searching vendor products with vendorId:', searchVendorId)
+      
       const q = query(
         collection(db, 'vendorProducts'),
-        where('vendorId', '==', vendorId)
+        where('vendorId', '==', searchVendorId)
       )
       const querySnap = await getDocs(q)
-      return querySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const products = querySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      
+      console.log('Found vendor products:', products)
+      return products
     } catch (error) {
       console.error('Error getting vendor products:', error)
       return []

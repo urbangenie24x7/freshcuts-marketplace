@@ -86,16 +86,19 @@ export const orderService = {
   // Get orders by vendor
   async getVendorOrders(vendorId) {
     try {
+      console.log('Getting orders for vendorId:', vendorId)
       const ordersQuery = query(
         collection(db, 'orders'),
-        where('vendorId', '==', vendorId),
-        orderBy('createdAt', 'desc')
+        where('vendorId', '==', vendorId)
       )
       const ordersSnap = await getDocs(ordersQuery)
-      return ordersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const orders = ordersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      console.log('Found orders:', orders.length)
+      return orders
     } catch (error) {
       console.error('Error getting vendor orders:', error)
-      throw error
+      // Return empty array instead of throwing to prevent page crash
+      return []
     }
   },
 

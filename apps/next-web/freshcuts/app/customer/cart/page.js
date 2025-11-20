@@ -14,7 +14,15 @@ export default function CartPage() {
   const [mounted, setMounted] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
   const [currentUser, setCurrentUser] = useState(null)
+  const [deliveryOptions, setDeliveryOptions] = useState({})
   const router = useRouter()
+
+  // Delivery settings
+  const deliverySettings = {
+    pickup: { charges: 0, label: 'Store Pickup', icon: '🏪' },
+    delivery: { charges: 35, freeAbove: 500, label: 'Home Delivery', icon: '🚚' },
+    express: { charges: 75, freeAbove: 1000, label: 'Express Delivery', icon: '⚡' }
+  }
 
   // Group cart items by vendor
   const groupedCart = cart.reduce((groups, item) => {
@@ -42,7 +50,38 @@ export default function CartPage() {
       router.push('/customer/login')
       return
     }
+    
+    // Set default delivery options if not selected
+    const defaultOptions = {}
+    Object.keys(groupedCart).forEach(vendorId => {
+      if (!deliveryOptions[vendorId]) {
+        defaultOptions[vendorId] = 'delivery' // Default to delivery to encourage MOQ
+      }
+    })
+    
+    if (Object.keys(defaultOptions).length > 0) {
+      setDeliveryOptions(prev => ({ ...prev, ...defaultOptions }))
+    }
+    
     setShowCheckout(true)
+  }
+
+  const updateDeliveryOption = (vendorId, option) => {
+    setDeliveryOptions(prev => ({ ...prev, [vendorId]: option }))
+  }
+
+  const getDeliveryCharge = (vendorId, vendorTotal) => {
+    const option = deliveryOptions[vendorId] || 'pickup'
+    if (option === 'pickup') return 0
+    if (option === 'delivery') return vendorTotal >= 500 ? 0 : 35
+    if (option === 'express') return vendorTotal >= 1000 ? 0 : 75
+    return 0
+  }
+
+  const getTotalDeliveryCharges = () => {
+    return Object.entries(groupedCart).reduce((total, [vendorId, vendorGroup]) => {
+      return total + getDeliveryCharge(vendorId, vendorGroup.total)
+    }, 0)
   }
 
   if (!mounted) {
@@ -173,9 +212,94 @@ export default function CartPage() {
               ))}
             </div>
             
-            {/* Order Summary */}
+            {/* Delivery Options & Order Summary */}
             <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '12px', border: '1px solid #e5e7eb', height: 'fit-content' }}>
-              <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#1f2937' }}>Order Summary</h2>
+              <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#1f2937' }}>Delivery Options</h2>
+              
+              {/* Delivery Options for each vendor */}
+              {Object.entries(groupedCart).map(([vendorId, vendorGroup]) => {
+                const selectedOption = deliveryOptions[vendorId] || 'delivery'
+                const deliveryCharge = getDeliveryCharge(vendorId, vendorGroup.total)
+                
+                return (
+                  <div key={vendorId} style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                    <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#1e293b' }}>{vendorGroup.vendorName}</h4>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#64748b' }}>Subtotal: ₹{vendorGroup.total}</p>
+                    
+                    <div style={{ display: 'grid', gap: '8px' }}>
+                      {/* Pickup Option */}
+                      <label style={{ display: 'flex', alignItems: 'center', padding: '8px', border: selectedOption === 'pickup' ? '2px solid #16a34a' : '1px solid #e5e7eb', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedOption === 'pickup' ? '#f0fdf4' : 'white' }}>
+                        <input
+                          type="radio"
+                          name={`delivery-${vendorId}`}
+                          value="pickup"
+                          checked={selectedOption === 'pickup'}
+                          onChange={() => updateDeliveryOption(vendorId, 'pickup')}
+                          style={{ marginRight: '8px' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>🏪</span>
+                            <span style={{ fontSize: '13px', fontWeight: '500' }}>Store Pickup</span>
+                            <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: '600' }}>FREE</span>
+                          </div>
+                          <p style={{ margin: '2px 0 0 20px', fontSize: '11px', color: '#6b7280' }}>Collect from store</p>
+                        </div>
+                      </label>
+                      
+                      {/* Home Delivery Option */}
+                      <label style={{ display: 'flex', alignItems: 'center', padding: '8px', border: selectedOption === 'delivery' ? '2px solid #16a34a' : '1px solid #e5e7eb', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedOption === 'delivery' ? '#f0fdf4' : 'white' }}>
+                        <input
+                          type="radio"
+                          name={`delivery-${vendorId}`}
+                          value="delivery"
+                          checked={selectedOption === 'delivery'}
+                          onChange={() => updateDeliveryOption(vendorId, 'delivery')}
+                          style={{ marginRight: '8px' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>🚚</span>
+                            <span style={{ fontSize: '13px', fontWeight: '500' }}>Home Delivery</span>
+                            <span style={{ fontSize: '12px', color: vendorGroup.total >= 500 ? '#16a34a' : '#f59e0b', fontWeight: '600' }}>
+                              {vendorGroup.total >= 500 ? 'FREE' : '₹35'}
+                            </span>
+                          </div>
+                          <p style={{ margin: '2px 0 0 20px', fontSize: '11px', color: vendorGroup.total >= 500 ? '#16a34a' : '#f59e0b' }}>
+                            {vendorGroup.total >= 500 ? 'Free delivery achieved!' : `Add ₹${500 - vendorGroup.total} for free delivery`}
+                          </p>
+                        </div>
+                      </label>
+                      
+                      {/* Express Delivery Option */}
+                      <label style={{ display: 'flex', alignItems: 'center', padding: '8px', border: selectedOption === 'express' ? '2px solid #16a34a' : '1px solid #e5e7eb', borderRadius: '6px', cursor: 'pointer', backgroundColor: selectedOption === 'express' ? '#f0fdf4' : 'white' }}>
+                        <input
+                          type="radio"
+                          name={`delivery-${vendorId}`}
+                          value="express"
+                          checked={selectedOption === 'express'}
+                          onChange={() => updateDeliveryOption(vendorId, 'express')}
+                          style={{ marginRight: '8px' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>⚡</span>
+                            <span style={{ fontSize: '13px', fontWeight: '500' }}>Express Delivery</span>
+                            <span style={{ fontSize: '12px', color: vendorGroup.total >= 1000 ? '#16a34a' : '#f59e0b', fontWeight: '600' }}>
+                              {vendorGroup.total >= 1000 ? 'FREE' : '₹75'}
+                            </span>
+                          </div>
+                          <p style={{ margin: '2px 0 0 20px', fontSize: '11px', color: vendorGroup.total >= 1000 ? '#16a34a' : '#f59e0b' }}>
+                            {vendorGroup.total >= 1000 ? 'Free express delivery!' : `Add ₹${1000 - vendorGroup.total} for free express`}
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )
+              })}
+              
+              <h3 style={{ margin: '20px 0 15px 0', fontSize: '18px', color: '#1f2937' }}>Order Summary</h3>
               
               <div style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '15px', marginBottom: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -183,14 +307,16 @@ export default function CartPage() {
                   <span>₹{getCartTotal()}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span>Delivery:</span>
-                  <span style={{ color: '#16a34a' }}>Free</span>
+                  <span>Delivery Charges:</span>
+                  <span style={{ color: getTotalDeliveryCharges() === 0 ? '#16a34a' : '#f59e0b' }}>
+                    {getTotalDeliveryCharges() === 0 ? 'FREE' : `₹${getTotalDeliveryCharges()}`}
+                  </span>
                 </div>
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>
                 <span>Total:</span>
-                <span style={{ color: '#16a34a' }}>₹{getCartTotal()}</span>
+                <span style={{ color: '#16a34a' }}>₹{getCartTotal() + getTotalDeliveryCharges()}</span>
               </div>
               
               <button
@@ -235,6 +361,7 @@ export default function CartPage() {
           <CheckoutFlow
             cartItems={cart}
             currentUser={currentUser}
+            deliveryOptions={deliveryOptions}
             onComplete={(orderData) => {
               clearCart()
               setShowCheckout(false)

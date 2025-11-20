@@ -21,8 +21,17 @@ export const getCurrentUser = () => {
 
 export const logout = () => {
   if (typeof window !== 'undefined') {
+    const user = getCurrentUser()
     localStorage.removeItem('currentUser')
-    window.location.href = '/customer/marketplace'
+    
+    // Redirect based on user role
+    if (user?.role === 'vendor') {
+      window.location.href = '/vendor/login'
+    } else if (user?.role === 'admin' || user?.role === 'super_admin') {
+      window.location.href = '/admin/login'
+    } else {
+      window.location.href = '/customer/marketplace'
+    }
   }
 }
 
