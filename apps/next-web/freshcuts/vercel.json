@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd apps/next-web/freshcuts && npm install && npm run build",
-  "outputDirectory": "apps/next-web/freshcuts/.next",
-  "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install"
 }
