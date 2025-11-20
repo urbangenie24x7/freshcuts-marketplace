@@ -1,59 +1,6 @@
 {
-  "rewrites": [
-    {
-      "source": "/manifest.json",
-      "destination": "/vendor-manifest.json",
-      "has": [
-        {
-          "type": "host",
-          "value": "vendor.freshcuts.urbangenie24x7.com"
-        }
-      ]
-    },
-    {
-      "source": "/manifest.json",
-      "destination": "/admin-manifest.json",
-      "has": [
-        {
-          "type": "host",
-          "value": "admin.freshcuts.urbangenie24x7.com"
-        }
-      ]
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/customer/marketplace",
-      "permanent": false,
-      "has": [
-        {
-          "type": "host",
-          "value": "freshcuts.urbangenie24x7.com"
-        }
-      ]
-    },
-    {
-      "source": "/",
-      "destination": "/vendor",
-      "permanent": false,
-      "has": [
-        {
-          "type": "host",
-          "value": "vendor.freshcuts.urbangenie24x7.com"
-        }
-      ]
-    },
-    {
-      "source": "/",
-      "destination": "/admin",
-      "permanent": false,
-      "has": [
-        {
-          "type": "host",
-          "value": "admin.freshcuts.urbangenie24x7.com"
-        }
-      ]
-    }
-  ]
+  "buildCommand": "cd apps/next-web/freshcuts && npm install && npm run build",
+  "outputDirectory": "apps/next-web/freshcuts/.next",
+  "installCommand": "npm install",
+  "framework": "nextjs"
 }
