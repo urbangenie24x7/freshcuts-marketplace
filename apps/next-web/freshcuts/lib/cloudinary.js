@@ -35,6 +35,39 @@ export const uploadToCloudinary = async (file) => {
   }
 }
 
+// Product image upload to specific folder
+export const uploadProductToCloudinary = async (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET)
+  formData.append('folder', 'freshcuts/products')
+  formData.append('resource_type', 'image')
+
+  try {
+    console.log('Uploading product to:', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`)
+    
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData
+      }
+    )
+    
+    const data = await response.json()
+    console.log('Cloudinary product response:', data)
+    
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Product upload failed')
+    }
+    
+    return data.secure_url
+  } catch (error) {
+    console.error('Cloudinary product upload error:', error)
+    throw error
+  }
+}
+
 // Logo upload to specific folder
 export const uploadLogoToCloudinary = async (file) => {
   const formData = new FormData()

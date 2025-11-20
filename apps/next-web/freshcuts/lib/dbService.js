@@ -157,6 +157,7 @@ export const cartService = {
 // Enhanced Order Management
 export const orderService = {
   async createOrder(orderData) {
+    console.log('OrderService: Creating order with customerId:', orderData.customerId)
     return runTransaction(db, async (transaction) => {
       // Create parent order
       const parentOrderRef = doc(collection(db, 'parentOrders'))
@@ -184,6 +185,8 @@ export const orderService = {
         const vendorOrder = {
           parentOrderId: parentOrderRef.id,
           customerId: orderData.customerId,
+          customerName: orderData.customerName || 'Customer',
+          customerPhone: orderData.customerPhone || '',
           vendorId: vendorGroup.vendorId,
           vendorName: vendorGroup.vendorName,
           items: vendorGroup.items,

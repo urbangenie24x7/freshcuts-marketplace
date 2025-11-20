@@ -1,9 +1,59 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/next"
+      "source": "/manifest.json",
+      "destination": "/vendor-manifest.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "vendor.freshcuts.urbangenie24x7.com"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "destination": "/admin-manifest.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "admin.freshcuts.urbangenie24x7.com"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/customer/marketplace",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "freshcuts.urbangenie24x7.com"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "destination": "/vendor",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "vendor.freshcuts.urbangenie24x7.com"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "destination": "/admin",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "admin.freshcuts.urbangenie24x7.com"
+        }
+      ]
     }
   ]
 }

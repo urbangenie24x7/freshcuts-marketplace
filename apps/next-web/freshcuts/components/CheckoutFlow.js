@@ -713,8 +713,13 @@ export default function CheckoutFlow({ cartItems, onComplete, onCancel, currentU
                     }
                   })
                   
+                  console.log('Creating order with customer ID:', currentUser.id)
+                  console.log('Current user object:', currentUser)
+                  
                   const orderData = {
                     customerId: currentUser.id,
+                    customerName: currentUser.name || currentUser.phone || 'Customer',
+                    customerPhone: currentUser.phone || '',
                     totalAmount: processedVendorGroups.reduce((sum, group) => sum + group.total, 0),
                     deliveryAddress: selectedAddress,
                     email: currentUser.email || '',

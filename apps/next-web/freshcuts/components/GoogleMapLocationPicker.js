@@ -17,12 +17,15 @@ export default function GoogleMapLocationPicker({ onLocationSelect, onClose, add
 
   const loadGoogleMapsScript = () => {
     if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      // Script already loaded, try to initialize
+      setTimeout(initializeMap, 100)
       return
     }
 
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!apiKey) {
-      console.warn('Google Maps API key not configured')
+      console.error('Google Maps API key not configured')
+      alert('Google Maps API key is not configured. Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.local file')
       return
     }
 
@@ -30,8 +33,14 @@ export default function GoogleMapLocationPicker({ onLocationSelect, onClose, add
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
     script.async = true
     script.defer = true
-    script.onload = initializeMap
-    script.onerror = () => console.error('Failed to load Google Maps API')
+    script.onload = () => {
+      console.log('Google Maps API loaded successfully')
+      initializeMap()
+    }
+    script.onerror = (error) => {
+      console.error('Failed to load Google Maps API:', error)
+      alert('Failed to load Google Maps. Please check your API key and internet connection.')
+    }
     document.head.appendChild(script)
   }
 

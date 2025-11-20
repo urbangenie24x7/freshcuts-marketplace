@@ -22,7 +22,7 @@ export const getCurrentUser = () => {
 export const logout = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('currentUser')
-    window.location.href = '/login'
+    window.location.href = '/customer/marketplace'
   }
 }
 
@@ -31,14 +31,14 @@ export const requireAuth = (allowedRoles = []) => {
   
   if (!user) {
     if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+      window.location.href = '/customer/login'
     }
     return null
   }
   
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+      window.location.href = '/customer/login'
     }
     return null
   }

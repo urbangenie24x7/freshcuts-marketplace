@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="64" fill="#f59e0b"/>
+  <path d="M256 128c-70.692 0-128 57.308-128 128s57.308 128 128 128 128-57.308 128-128-57.308-128-128-128zm0 20c59.647 0 108 48.353 108 108s-48.353 108-108 108-108-48.353-108-108 48.353-108 108-108z" fill="white"/>
+  <path d="M256 192c-35.346 0-64 28.654-64 64s28.654 64 64 64 64-28.654 64-64-28.654-64-64-64z" fill="white"/>
+  <path d="M200 320h112v20H200z" fill="white"/>
+  <path d="M220 340h72v12H220z" fill="white"/>
+  <text x="256" y="420" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="36" font-weight="bold">Vendor</text>
+</svg>
