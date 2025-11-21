@@ -138,7 +138,7 @@ export default function CustomerMarketplace() {
           <h2 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0 0 30px 0', color: '#1f2937', textAlign: 'center' }}>🔥 Popular Products</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
             {products.filter(product => product.available).slice(0, 10).map(product => (
-              <Link key={product.id} href={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link key={product.id} href={`/category/${encodeURIComponent(product.category)}?product=${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{
                   backgroundColor: 'white',
                   borderRadius: '16px',

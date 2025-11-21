@@ -312,6 +312,28 @@ button:focus, .btn:focus, input:focus, select:focus, textarea:focus {
   outline-offset: 2px;
 }
 
+/* Product Highlighting */
+.highlight-product {
+  border: 2px solid #16a34a !important;
+  box-shadow: 0 0 20px rgba(22, 163, 74, 0.3) !important;
+  animation: pulse-highlight 2s ease-in-out;
+}
+
+@keyframes pulse-highlight {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(22, 163, 74, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(22, 163, 74, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(22, 163, 74, 0.3);
+  }
+}
+
 /* Print styles */
 @media print {
   .no-print {

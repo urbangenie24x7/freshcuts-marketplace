@@ -15,10 +15,26 @@ export default function VendorProductsPage() {
   const [vendor, setVendor] = useState(null)
   const [loading, setLoading] = useState(true)
   const category = searchParams.get('category')
+  const highlightProductId = searchParams.get('product')
 
   useEffect(() => {
     loadVendorProducts()
   }, [params.id, category])
+
+  useEffect(() => {
+    if (highlightProductId && !loading && products.length > 0) {
+      setTimeout(() => {
+        const productElement = document.getElementById(`product-${highlightProductId}`)
+        if (productElement) {
+          productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          productElement.classList.add('highlight-product')
+          setTimeout(() => {
+            productElement.classList.remove('highlight-product')
+          }, 3000)
+        }
+      }, 500)
+    }
+  }, [highlightProductId, loading, products])
 
   const loadVendorProducts = async () => {
     try {
@@ -109,13 +125,17 @@ export default function VendorProductsPage() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
             {products.map(product => (
-            <div key={product.id} style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              border: '1px solid #e5e7eb',
-              overflow: 'hidden',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
+            <div 
+              key={product.id} 
+              id={`product-${product.productId || product.id}`}
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb',
+                overflow: 'hidden',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease'
+              }}>
               {(product.imageUrl || product.image_url) ? (
                 <img src={product.imageUrl || product.image_url} alt={product.productName || product.name} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
               ) : (

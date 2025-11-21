@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navigation from '../../../components/Navigation'
 import { getCurrentUser } from '../../../lib/auth'
@@ -9,17 +9,35 @@ import { getCurrentUser } from '../../../lib/auth'
 export default function CategoryVendors() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [vendors, setVendors] = useState([])
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState(null)
   const categoryName = decodeURIComponent(params.slug)
+  const highlightProductId = searchParams.get('product')
 
   useEffect(() => {
     const user = getCurrentUser()
     setCurrentUser(user)
     getCurrentLocation()
   }, [])
+
+  useEffect(() => {
+    // Highlight product if coming from popular products
+    if (highlightProductId && !loading) {
+      setTimeout(() => {
+        const productElement = document.getElementById(`product-${highlightProductId}`)
+        if (productElement) {
+          productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          productElement.classList.add('highlight-product')
+          setTimeout(() => {
+            productElement.classList.remove('highlight-product')
+          }, 3000)
+        }
+      }, 500)
+    }
+  }, [highlightProductId, loading])
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -166,6 +184,25 @@ export default function CategoryVendors() {
           </p>
         </div>
 
+        {/* Product Highlight Message */}
+        {highlightProductId && (
+          <div style={{ 
+            backgroundColor: '#f0fdf4', 
+            border: '1px solid #bbf7d0', 
+            borderRadius: '8px', 
+            padding: '12px 16px', 
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span style={{ fontSize: '16px' }}>🎯</span>
+            <span style={{ color: '#15803d', fontSize: '14px', fontWeight: '500' }}>
+              Looking for a specific product? Choose a vendor below to see their {categoryName} selection.
+            </span>
+          </div>
+        )}
+
         {vendors.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: 'white', borderRadius: '16px', border: '1px solid #e5e7eb' }}>
             <h3 style={{ fontSize: '24px', color: '#374151', marginBottom: '10px' }}>No vendors found</h3>
@@ -217,7 +254,7 @@ export default function CategoryVendors() {
                     </div>
                     
                     <div className="vendor-actions">
-                      <Link href={`/vendor/${vendor.id}/products?category=${encodeURIComponent(categoryName)}`}>
+                      <Link href={`/vendor/${vendor.id}/products?category=${encodeURIComponent(categoryName)}${highlightProductId ? `&product=${highlightProductId}` : ''}`}>
                         <button style={{
                           padding: '12px 24px',
                           backgroundColor: '#16a34a',
