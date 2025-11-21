@@ -10,37 +10,80 @@ export function CartProvider({ children }) {
   const [loading, setLoading] = useState(false)
   const [deliveryOptions, setDeliveryOptions] = useState({})
 
+  const getCartKey = (userId) => userId ? `cart_${userId}` : 'cart_guest'
+
+  const loadCart = (userId = null) => {
+    if (typeof window === 'undefined') return []
+    const cartKey = getCartKey(userId)
+    const savedCart = localStorage.getItem(cartKey)
+    return savedCart ? JSON.parse(savedCart) : []
+  }
+
+  const saveCart = (cartItems, userId = null) => {
+    if (typeof window === 'undefined') return
+    const cartKey = getCartKey(userId)
+    localStorage.setItem(cartKey, JSON.stringify(cartItems))
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Load saved cart
-      const savedCart = localStorage.getItem('freshcuts-cart')
-      if (savedCart) {
-        try {
-          setCart(JSON.parse(savedCart))
-        } catch (error) {
-          console.error('Error parsing saved cart:', error)
-        }
-      }
-      
-      // Load saved user
+      // Load saved user first
       const savedUser = localStorage.getItem('currentUser')
       if (savedUser) {
         try {
           const user = JSON.parse(savedUser)
           setCurrentUser(user)
+          // Load user-specific cart
+          setCart(loadCart(user.id))
         } catch (error) {
           console.error('Error parsing saved user:', error)
+          setCart(loadCart())
         }
+      } else {
+        // Load guest cart
+        setCart(loadCart())
       }
     }
   }, [])
 
-  // Save cart to localStorage whenever it changes
+  // Handle user changes (login/logout)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('freshcuts-cart', JSON.stringify(cart))
+      const handleUserChange = () => {
+        const user = JSON.parse(localStorage.getItem('currentUser') || 'null')
+        const lastUserId = localStorage.getItem('lastUserId')
+        
+        if (user?.id !== lastUserId) {
+          // User changed, migrate guest cart if needed
+          if (user?.id && !lastUserId) {
+            const guestCart = loadCart(null)
+            const userCart = loadCart(user.id)
+            
+            if (guestCart.length > 0 && userCart.length === 0) {
+              saveCart(guestCart, user.id)
+              localStorage.removeItem('cart_guest')
+            }
+          }
+          
+          // Load appropriate cart
+          setCurrentUser(user)
+          setCart(loadCart(user?.id))
+          localStorage.setItem('lastUserId', user?.id || '')
+        }
+      }
+      
+      // Check on storage changes
+      window.addEventListener('storage', handleUserChange)
+      return () => window.removeEventListener('storage', handleUserChange)
     }
-  }, [cart])
+  }, [])
+
+  // Save cart whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && cart.length >= 0) {
+      saveCart(cart, currentUser?.id)
+    }
+  }, [cart, currentUser?.id])
 
   const addToCart = (cartItem) => {
     console.log('Adding to cart:', cartItem)
@@ -94,7 +137,8 @@ export function CartProvider({ children }) {
     setCart([])
     setDeliveryOptions({})
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('freshcuts-cart')
+      const cartKey = getCartKey(currentUser?.id)
+      localStorage.removeItem(cartKey)
     }
   }
 

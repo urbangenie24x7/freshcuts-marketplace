@@ -24,6 +24,9 @@ export const logout = () => {
     const user = getCurrentUser()
     localStorage.removeItem('currentUser')
     
+    // Trigger storage event to notify CartContext
+    window.dispatchEvent(new Event('storage'))
+    
     // Redirect based on user role
     if (user?.role === 'vendor') {
       window.location.href = '/vendor/login'

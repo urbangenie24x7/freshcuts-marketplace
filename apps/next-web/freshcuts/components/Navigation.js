@@ -184,7 +184,10 @@ export default function Navigation() {
                   Profile
                 </Link>
                 <button
-                  onClick={logout}
+                  onClick={() => {
+                    // Cart will be preserved per user, just logout
+                    logout()
+                  }}
                   style={{
                     backgroundColor: 'rgba(124, 45, 18, 0.1)',
                     color: '#7c2d12',
@@ -411,7 +414,10 @@ export default function Navigation() {
                     </>
                   )}
                   <button
-                    onClick={logout}
+                    onClick={() => {
+                      // Cart will be preserved per user, just logout
+                      logout()
+                    }}
                     style={{
                       backgroundColor: 'rgba(124, 45, 18, 0.1)',
                       color: '#7c2d12',
